@@ -1,5 +1,6 @@
 package com.library.account;
 
+import java.sql.Connection;
 import java.sql.Statement;
 
 import com.library.connection.UseDB;
@@ -43,7 +44,7 @@ public class AccountController extends UseDB{
 	 * 
 	 * 매개 변수에 따라 다른 작업을 실행합니다. execute(String job)에서 호출됩니다.
 	 * 
-	 * @param stmt sql을 실행하기 위한 실행 도구
+	 * @param conn DB에 접속하기 위한 도구
 	 * @param jobNum 실행할 작업의 번호 또는 이름 
 	 * <ul>
 	 * 		<li>{@code "logIn"} 로그인</li>
@@ -52,7 +53,8 @@ public class AccountController extends UseDB{
 	 * 		<li>{@code "deleteAccount"} 회원 탈퇴</li>
 	 * </ul>
 	 */
-	protected void doExecute(Statement stmt, String job)
+	@Override
+	protected void doExecute(Connection conn, String job)
 	{
 		// TODO switch문 아래의 case에 매개 변수에 맞는 함수들을 작성합니다.
 
@@ -60,22 +62,22 @@ public class AccountController extends UseDB{
 		{
 			case "logIn": 
 			{
-				logIn(stmt);
+				logIn(conn);
 				break;
 			}
 			case "logOut": 
 			{
-				logOut(stmt);
+				logOut(conn);
 				break;
 			}
 			case "signUp": 
 			{
-				signUp(stmt);
+				signUp(conn);
 				break;
 			}
 			case "deleteAccount": 
 			{
-				deleteAccount(stmt);
+				deleteAccount(conn);
 				break;
 			}
 			default :
@@ -89,12 +91,11 @@ public class AccountController extends UseDB{
 	/**
 	 * 로그인 실행 메서드
 	 * 
-	 * @param stmt sql을 실행하기 위한 실행 도구
+	 * @param conn DB에 접속하기 위한 도구
 	 */
-	private void logIn(Statement stmt)
+	private void logIn(Connection conn)
 	{
 		// 로그인 처리 과정
-		
 		//userType = "user";
 		userType = "admin";
 		return;
@@ -103,9 +104,9 @@ public class AccountController extends UseDB{
 	/**
 	 * 로그아웃 실행 메서드
 	 * 
-	 * @param stmt sql을 실행하기 위한 실행 도구
+	 * @param conn DB에 접속하기 위한 도구
 	 */
-	private void logOut(Statement stmt)
+	private void logOut(Connection conn)
 	{
 		// 로그아웃 처리 과정
 		
@@ -116,9 +117,9 @@ public class AccountController extends UseDB{
 	/**
 	 * 회원 가입 실행 메서드
 	 * 
-	 * @param stmt sql을 실행하기 위한 실행 도구
+	 * @param conn DB에 접속하기 위한 도구
 	 */
-	private void signUp(Statement stmt)
+	private void signUp(Connection conn)
 	{
 		userType = "guest";
 		return;
@@ -127,9 +128,9 @@ public class AccountController extends UseDB{
 	/**
 	 * 회원 탈퇴 실행 메서드
 	 * 
-	 * @param stmt sql을 실행하기 위한 실행 도구
+	 * @param conn DB에 접속하기 위한 도구
 	 */
-	private void deleteAccount(Statement stmt)
+	private void deleteAccount(Connection conn)
 	{
 		
 		userType = "guest";
