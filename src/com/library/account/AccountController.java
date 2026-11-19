@@ -91,7 +91,7 @@ public class AccountController extends UseDB{
 	 * 
 	 * @param stmt sql을 실행하기 위한 실행 도구
 	 */
-	public void logIn(Statement stmt)
+	private void logIn(Statement stmt)
 	{
 		// 로그인 처리 과정
 		
@@ -105,7 +105,7 @@ public class AccountController extends UseDB{
 	 * 
 	 * @param stmt sql을 실행하기 위한 실행 도구
 	 */
-	public void logOut(Statement stmt)
+	private void logOut(Statement stmt)
 	{
 		// 로그아웃 처리 과정
 		
@@ -118,7 +118,7 @@ public class AccountController extends UseDB{
 	 * 
 	 * @param stmt sql을 실행하기 위한 실행 도구
 	 */
-	public void signUp(Statement stmt)
+	private void signUp(Statement stmt)
 	{
 		userType = "guest";
 		return;
@@ -129,7 +129,7 @@ public class AccountController extends UseDB{
 	 * 
 	 * @param stmt sql을 실행하기 위한 실행 도구
 	 */
-	public void deleteAccount(Statement stmt)
+	private void deleteAccount(Statement stmt)
 	{
 		
 		userType = "guest";
