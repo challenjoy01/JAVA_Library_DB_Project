@@ -1,7 +1,10 @@
 package com.library.account;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Scanner;
 
 import com.library.connection.UseDB;
 
@@ -20,8 +23,9 @@ public class AccountController extends UseDB{
 	 * 		<li>{@code "admin"} 관리자 계정</li>
 	 * </ul>
 	 * */
-	private static String userType = "guest";
-	
+	private static String userType = "GUEST";
+	/** 현재 로그인한 회원 아이디를 나타내는 변수. */
+	private static String userID = null;
 	/**
 	 * 계정 관련 함수를 실행하는 함수.
 	 * @param job 실행할 작업을 결정하는 매개변수
@@ -96,8 +100,72 @@ public class AccountController extends UseDB{
 	private void logIn(Connection conn)
 	{
 		// 로그인 처리 과정
-		//userType = "user";
-		userType = "admin";
+		Scanner scan = new Scanner(System.in);
+		Statement stmt = null;
+		ResultSet rs = null;
+		
+		String id = new String();
+		String password = new String();
+		Boolean logInSuccess = false;
+		
+		System.out.println("");
+		System.out.println("=====로그인=====");
+		System.out.println("아이디 입력");
+		System.out.print("아이디 : ");
+		id = scan.next();
+		System.out.println("비밀번호 입력");
+		System.out.print("비밀번호 : ");
+		password = scan.next();
+		
+		try {
+			String sql = "SELECT user_id, password, user_type FROM member";
+
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery(sql);
+			while(rs.next())
+			{
+				String tempID = rs.getString("user_id");
+				// 동일한 ID가 있는지 탐색
+				if(id.equals(tempID))
+				{
+					// 비밀번호가 일치하는지 확인
+					if(password.equals(rs.getString("password")))
+					{
+						userID = tempID;
+						userType = rs.getString("user_type");
+						logInSuccess = true;
+						System.out.println("로그인 성공!\n");
+						break;
+					}
+				}
+			}
+			// 로그인에 실패했을 경우
+			if(!logInSuccess)
+			{
+				System.out.println("아이디 또는 비밀번호가 일치하지 않습니다.\n");
+			}
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		finally
+		{
+			try {
+				if(rs != null)
+				{
+					rs.close();
+				}
+				if(stmt != null)
+				{
+					stmt.close();
+				}
+				
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		return;
 	}
 	
@@ -110,7 +178,8 @@ public class AccountController extends UseDB{
 	{
 		// 로그아웃 처리 과정
 		
-		userType = "guest";
+		userID = null;
+		userType = "GUEST";
 		return;
 	}
 	
@@ -121,7 +190,9 @@ public class AccountController extends UseDB{
 	 */
 	private void signUp(Connection conn)
 	{
-		userType = "guest";
+		
+		userID = null;
+		userType = "GUEST";
 		return;
 	}
 	
@@ -133,7 +204,8 @@ public class AccountController extends UseDB{
 	private void deleteAccount(Connection conn)
 	{
 		
-		userType = "guest";
+		userID = null;
+		userType = "GUEST";
 		return;
 	}
 
@@ -150,4 +222,15 @@ public class AccountController extends UseDB{
 	public static String getUserType() {
 		return userType;
 	}
+	
+	/** 현재 로그인한 ID를 반환하는 getter 메서드.
+	 * 
+	 * @return userID
+	 * null일 경우 게스트, 나머지는 회원 ID
+	 * */
+	public static String getUserID() {
+		return userID;
+	}
+	
+	
 }
