@@ -1,9 +1,9 @@
 package com.library.account;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Scanner;
 
 import com.library.connection.UseDB;
@@ -101,7 +101,7 @@ public class AccountController extends UseDB{
 	{
 		// 로그인 처리 과정
 		Scanner scan = new Scanner(System.in);
-		Statement stmt = null;
+		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		
 		String id = new String();
@@ -118,25 +118,25 @@ public class AccountController extends UseDB{
 		password = scan.next();
 		
 		try {
-			String sql = "SELECT user_id, password, user_type FROM member";
+			// 동일한 ID가 있는지 탐색
+			String sql = "SELECT user_id, password, user_type FROM member "
+						+ "WHERE user_id = ?";
 
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery(sql);
-			while(rs.next())
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, id);
+			rs = pstmt.executeQuery();
+			
+
+			//결과가 존재할 경우(일치하는 ID가 존재할 경우
+			if(rs.next())
 			{
-				String tempID = rs.getString("user_id");
-				// 동일한 ID가 있는지 탐색
-				if(id.equals(tempID))
+				// 비밀번호도 일치하는지 확인
+				if(password.equals(rs.getString("password")))
 				{
-					// 비밀번호가 일치하는지 확인
-					if(password.equals(rs.getString("password")))
-					{
-						userID = tempID;
-						userType = rs.getString("user_type");
-						logInSuccess = true;
-						System.out.println("로그인 성공!\n");
-						break;
-					}
+					userID = id;
+					userType = rs.getString("user_type");
+					logInSuccess = true;
+					System.out.println("로그인 성공!\n");
 				}
 			}
 			// 로그인에 실패했을 경우
@@ -156,9 +156,9 @@ public class AccountController extends UseDB{
 				{
 					rs.close();
 				}
-				if(stmt != null)
+				if(pstmt != null)
 				{
-					stmt.close();
+					pstmt.close();
 				}
 				
 			} catch (SQLException e) {
@@ -167,7 +167,7 @@ public class AccountController extends UseDB{
 			}
 		}
 		return;
-	}
+	}//logIn 메서드
 	
 	/**
 	 * 로그아웃 실행 메서드
