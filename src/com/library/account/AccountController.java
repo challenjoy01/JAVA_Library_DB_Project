@@ -118,7 +118,7 @@ public class AccountController extends UseDB{
 		password = scan.next();
 		
 		try {
-			// 동일한 ID가 있는지 탐색
+			/** 동일한 ID가 있는지 탐색 */
 			String sql = "SELECT user_id, password, user_type FROM member "
 						+ "WHERE user_id = ?";
 
@@ -127,10 +127,13 @@ public class AccountController extends UseDB{
 			rs = pstmt.executeQuery();
 			
 
-			//결과가 존재할 경우(일치하는 ID가 존재할 경우
+			/** 
+			 * 결과가 존재할 경우(일치하는 ID가 존재할 경우. sql 결과가 없으면 
+			 * next 실행 시 false가 반환됩니다.) 
+			 */
 			if(rs.next())
 			{
-				// 비밀번호도 일치하는지 확인
+				/** 비밀번호도 일치하는지 확인 */
 				if(password.equals(rs.getString("password")))
 				{
 					userID = id;
@@ -167,7 +170,7 @@ public class AccountController extends UseDB{
 			}
 		}
 		return;
-	}//logIn 메서드
+	}// logIn 메서드
 	
 	/**
 	 * 로그아웃 실행 메서드
@@ -181,7 +184,7 @@ public class AccountController extends UseDB{
 		userID = null;
 		userType = "GUEST";
 		return;
-	}
+	}// logOut 메서드
 	
 	/**
 	 * 회원 가입 실행 메서드
@@ -190,11 +193,12 @@ public class AccountController extends UseDB{
 	 */
 	private void signUp(Connection conn)
 	{
-		
+		/** 회원 정보를 받은 후 알맞은 정보를 받았다면 DB에 저장 */
+		/** 로그인 정보를 초기화 */
 		userID = null;
 		userType = "GUEST";
 		return;
-	}
+	}// signUp 메서드
 	
 	/**
 	 * 회원 탈퇴 실행 메서드
@@ -203,11 +207,56 @@ public class AccountController extends UseDB{
 	 */
 	private void deleteAccount(Connection conn)
 	{
+		/** 현재 아이디에 해당하는 회원 데이터 삭제 */
+		PreparedStatement pstmt = null;
 		
-		userID = null;
-		userType = "GUEST";
+		try {
+			/** 현재 아이디에 해당하는 열을 삭제 */
+			String sql = "DELETE FROM member "
+						+ "WHERE user_id = ?";
+
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, userID);
+			
+            int p = pstmt.executeUpdate();  //갱신
+            if(p > 0) {
+                conn.commit();
+                System.out.println("회원 탈퇴 성공");
+                
+                /** 성공했을 경우 로그인 정보를 초기화 */
+        		userID = null;
+        		userType = "GUEST";
+            } else {
+                conn.rollback();
+                System.out.println("회원 탈퇴 실패");
+            }
+		}// try 
+		catch (SQLException e) {
+			// TODO Auto-generated catch block
+			/** 예외 발생 시 롤백 */
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+            System.out.println("회원 탈퇴 오류");
+			e.printStackTrace();
+		}// catch
+		finally
+		{
+			try {
+				if(pstmt != null)
+				{
+					pstmt.close();
+				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}// finally
 		return;
-	}
+	}// deleteAccount 메서드
 
 	
 	/** 현재 로그인 상태를 반환하는 getter 메서드.
