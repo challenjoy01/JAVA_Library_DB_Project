@@ -354,6 +354,22 @@ public class AccountController extends UseDB{
 	 */
 	private void deleteAccount(Connection conn)
 	{
+		/** 탈퇴 여부 확인 */
+		System.out.print("정말 탈퇴하시겠습니까?(y|n) >> ");
+		String deleteOk = scan.next();
+		if(deleteOk.toLowerCase().equals("n"))
+		{
+			/** 탈퇴 안함을 선택했을 경우 */
+			System.out.println("회원 탈퇴를 취소했습니다.");
+			return;
+		}
+		else if(!deleteOk.toLowerCase().equals("y"))
+		{
+			/** 선택지에 없는 문자를 입력했을 경우 */
+			System.out.println("잘못된 문자를 입력했습니다.");
+			return;
+		}
+		
 		/** 현재 아이디에 해당하는 회원 데이터 삭제 */
 		PreparedStatement pstmt = null;
 		
@@ -369,6 +385,7 @@ public class AccountController extends UseDB{
             if(p > 0) {
                 conn.commit();
                 System.out.println("회원 탈퇴 성공");
+                System.out.println();
                 
                 /** 성공했을 경우 로그인 정보를 초기화 */
         		userID = null;
