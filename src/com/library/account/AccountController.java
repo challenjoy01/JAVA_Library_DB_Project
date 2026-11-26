@@ -16,6 +16,7 @@ import com.library.connection.UseDB;
  * @author challenjoy01
  */
 public class AccountController extends UseDB{
+	private Scanner scan = new Scanner(System.in);
 	/** 현재 로그인 상태를 나타내는 변수.
 	 * <ul>
 	 * 		<li>{@code "guest"} 게스트 상태</li>
@@ -194,7 +195,153 @@ public class AccountController extends UseDB{
 	private void signUp(Connection conn)
 	{
 		/** 회원 정보를 받은 후 알맞은 정보를 받았다면 DB에 저장 */
-		/** 로그인 정보를 초기화 */
+		String id;			// 아이디
+		String password;	// 비밀번호
+		String name;		// 회원 이름
+		String phone;		// 휴대폰 번호
+		String type;		// 회원 유형(일반 회원 / 관리자)
+		
+		/** 회원 유형 확인(관리자일 경우 관리자 확인 코드를 입력해야 회원가입 가능) */
+		System.out.println("회원 유형 확인(일반 회원 / 관리자)");
+		System.out.print("회원 유형 입력 >> ");
+		type = scan.nextLine();
+		if(type.equals("일반 회원") || type.equals("일반회원"))
+		{
+			type = "USER";
+			System.out.println("------일반 회원 가입------");
+			System.out.println();
+		}// if
+		else if(type.equals("관리자"))
+		{
+			System.out.println("관리자 코드를 입력해주세요.");
+			System.out.print("관리자 코드 입력 >> ");
+			String isAdmin = scan.next();
+			
+			if(isAdmin.equals("Admin1234"))
+			{
+				type = "ADMIN";
+				System.out.println();
+				System.out.println("------관리자 회원 가입------");
+				System.out.println();
+			}
+			else
+			{
+				System.out.println("관리자 확인 실패.");
+				System.out.println();
+				return;
+			}
+		}// else if
+		else
+		{
+			System.out.println("존재하지 않는 회원 유형입니다.");
+			System.out.println();
+			return;
+		}// else
+
+		/** 아이디 입력 */
+		System.out.println("아이디를 입력해주세요.");
+		System.out.print("아이디 입력 >> ");
+		id = scan.next();
+		
+		/** 비밀번호 입력 */
+		System.out.println("비밀번호를 입력해주세요.");
+		System.out.print("비밀번호 입력 >> ");
+		password = scan.next();
+		
+		/** 이름 입력 */
+		System.out.println("사용자 이름을 입력해주세요.");
+		System.out.print("사용자 이름 입력 >> ");
+		name = scan.next();
+		
+		/** 전화번호 입력 */
+		System.out.println("전화번호를 입력해주세요(***-****-****).");
+		System.out.print("전화번호 입력 >> ");
+		phone = scan.next();
+		
+		PreparedStatement idPstmt = null;
+		ResultSet rs = null;
+		PreparedStatement pstmt = null;
+		
+		try {
+			/** 동일한 ID가 있는지 탐색 */
+			String searchIdSql = "SELECT user_id FROM member "
+						+ "WHERE user_id = ?";
+
+			idPstmt = conn.prepareStatement(searchIdSql);
+			idPstmt.setString(1, id);
+			rs = idPstmt.executeQuery();
+			
+
+			/** 
+			 * 결과가 존재하지 않을 경우(일치하는 ID가 존재하지 않을 경우. sql 결과가 없으면 
+			 * next 실행 시 false가 반환됩니다.) 입력받은 내용을 DB에 저장.
+			 */
+			if(!rs.next())
+			{
+				String sql = "INSERT INTO member (user_id, password, user_name, phone, user_type)"
+						+ "VALUES (?, ?, ?, ?, ?)";
+
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setString(1, id);
+				pstmt.setString(2, password);
+				pstmt.setString(3, name);
+				pstmt.setString(4, phone);
+				pstmt.setString(5, type);
+				
+	            int p = pstmt.executeUpdate();  //갱신
+	            if(p > 0) {
+	                conn.commit();
+	                System.out.println("회원 가입 성공");
+	                System.out.println();
+
+	                /** 성공했을 경우 로그인 정보를 초기화 */
+	        		userID = null;
+	        		userType = "GUEST";
+	            } // if 
+	            else {
+	                conn.rollback();
+	                System.out.println("회원 가입 실패");
+	            }// else
+			}// if			
+			else
+			{
+				System.out.println("사용할 수 없는 아이디입니다.");
+			}
+					}// try 
+		catch (SQLException e) {
+			// TODO Auto-generated catch block
+			/** 예외 발생 시 롤백 */
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+            System.out.println("회원 가입 오류");
+			e.printStackTrace();
+		}// catch
+		finally
+		{
+			try {
+				if(pstmt != null)
+				{
+					pstmt.close();
+				}
+				if(rs != null)
+				{
+					rs.close();
+				}
+				if(idPstmt != null)
+				{
+					idPstmt.close();
+				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}// finally
+		
+		/** 로그인 정보를 초기화(혹시 몰라서 넣어둔 코드임) */
 		userID = null;
 		userType = "GUEST";
 		return;
@@ -279,7 +426,5 @@ public class AccountController extends UseDB{
 	 * */
 	public static String getUserID() {
 		return userID;
-	}
-	
-	
-}
+	}	
+}// AccountController 클래스
